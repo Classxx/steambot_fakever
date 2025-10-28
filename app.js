@@ -187,4 +187,18 @@ function showToast(message){
 // ===== Инициализация =====
 const ruRadio = document.getElementById("reg-ru");
 if (ruRadio) ruRadio.checked = true; // дефолт: Россия
+
+// ===== Фикс: закрытие клавиатуры при тапе вне полей =====
+document.addEventListener('touchend', (e) => {
+  const isInput = e.target.closest('input, textarea, select');
+  if (!isInput) {
+    // снимаем фокус со всех инпутов
+    document.activeElement?.blur();
+    // иногда помогает принудительный скролл (iOS Safari bug)
+    setTimeout(() => window.scrollTo(0, 0), 50);
+  }
+});
+
+
 recalc();
+
