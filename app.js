@@ -132,7 +132,7 @@ document.getElementById("topup-form").addEventListener("submit", (e) => {
     login:  loginInput.value.trim(),
     region: getRegion(),                 // RU | KZ | CIS
     creditCurrency: creditSymbol(),      // ₽ | ₸ | $
-    amount: getAmount(),                 // введённая сумма (единица — условно ₽ как базовая)
+    amount: getAmount(),                 // введённая сумма (условная базовая)
     feeRate: FEE_RATE,
     feeFixed: FEE_FIXED,
     promo:  (promoInput.value.trim() || null),
@@ -161,4 +161,6 @@ function showToast(message){
 }
 
 // ===== Инициализация =====
-const ruRadio = document.getElementB
+const ruRadio = document.getElementById("reg-ru");
+if (ruRadio) ruRadio.checked = true; // дефолт: Россия
+recalc();
