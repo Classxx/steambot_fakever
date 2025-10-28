@@ -3,8 +3,12 @@ const FEE_RATE = 0.045;     // 4.5% комиссия сервиса (на опл
 const FEE_FIXED = 10;       // фиксированная комиссия (₽)
 const PAY_CURRENCY = "₽";   // валюта оплаты и комиссий
 
-// Валюта зачисления зависит от региона (только знак/символ, без конвертации)
+// Валюта зачисления зависит от региона
 const CREDIT_CURRENCY_BY_REGION = { RU: "₽", KZ: "₸", CIS: "$" };
+
+// Курсы (хардкод)
+const RATE_RUB_TO_KZT = 6.73;  // 1 ₽ = 6.73 ₸
+const RATE_RUB_PER_USD = 82;   // 1 $ = 82 ₽  => $ = ₽ / 82
 
 // Промокоды (регистр не важен). TEST — 10%
 const PROMOS = {
@@ -18,7 +22,6 @@ const PROMOS = {
 const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
 if (tg) {
   tg.ready();
-  // Небольшая подстройка под тему Telegram
   if (tg.backgroundColor) document.body.style.backgroundColor = tg.backgroundColor;
 }
 
@@ -35,10 +38,29 @@ function getRegion() {
 function creditSymbol() {
   return CREDIT_CURRENCY_BY_REGION[getRegion() || "RU"] || "₽";
 }
-function fmtCreditApprox(n) {
-  // «≈» — чтобы показать возможное колебание 2–3%
-  return isNaN(n) ? "—" :
-    "≈ " + new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 }).format(n) + " " + creditSymbol();
+
+// Конвертация ₽ -> (₽/₸/$) для "Суммы к зачислению"
+function convertCreditAmount(rubAmount) {
+  const region = getRegion() || "RU";
+  if (!isFinite(rubAmount) || rubAmount <= 0) return 0;
+
+  switch (region) {
+    case "KZ":
+      return rubAmount * RATE_RUB_TO_KZT;         // ₽ -> ₸
+    case "CIS":
+      return rubAmount / RATE_RUB_PER_USD;        // ₽ -> $
+    case "RU":
+    default:
+      return rubAmount;                            // ₽ -> ₽
+  }
+}
+
+// «≈» — чтобы указать возможное колебание 2–3%
+function fmtCreditApprox(n, symbol) {
+  if (isNaN(n)) return "—";
+  // Для чистоты отображения округлим до 2 знаков
+  const formatted = new Intl.NumberFormat("ru-RU", { maximumFractionDigits: 2 }).format(n);
+  return `≈ ${formatted} ${symbol}`;
 }
 
 // ===== DOM элементы =====
@@ -89,16 +111,17 @@ function getAmount() {
 }
 
 function recalc() {
-  const base = getAmount();
+  const baseRub = getAmount();
 
-  // Сумма к зачислению — в валюте региона, с «≈»
-  sumAmount.textContent = fmtCreditApprox(base);
+  // Сумма к зачислению — в валюте региона по курсу
+  const credit = convertCreditAmount(baseRub);
+  sumAmount.textContent = fmtCreditApprox(credit, creditSymbol());
 
   // Комиссия и итог — в ₽
-  const fee = base > 0 ? +(base * FEE_RATE + FEE_FIXED).toFixed(2) : 0;
+  const fee = baseRub > 0 ? +(baseRub * FEE_RATE + FEE_FIXED).toFixed(2) : 0;
   feeAmount.textContent = fmtPay(fee);
 
-  const totalBeforeDiscount = base + fee;
+  const totalBeforeDiscount = baseRub + fee;
   const discount = getPromoDiscount(totalBeforeDiscount);
   discountAmount.textContent = discount ? "− " + fmtPay(discount).replace(" " + PAY_CURRENCY, "") + " " + PAY_CURRENCY : "—";
 
@@ -109,7 +132,7 @@ function recalc() {
   const valid =
     loginInput.value.trim().length >= 3 &&
     getRegion() &&
-    base >= +amountInput.min &&
+    baseRub >= +amountInput.min &&
     terms.checked;
 
   payBtn.disabled = !valid;
@@ -128,16 +151,17 @@ document.getElementById("topup-form").addEventListener("submit", (e) => {
   e.preventDefault();
   if (payBtn.disabled) return;
 
+  const baseRub = getAmount();
   const payload = {
     login:  loginInput.value.trim(),
-    region: getRegion(),                 // RU | KZ | CIS
-    creditCurrency: creditSymbol(),      // ₽ | ₸ | $
-    amount: getAmount(),                 // введённая сумма (условная базовая)
+    region: getRegion(),                     // RU | KZ | CIS
+    creditCurrency: creditSymbol(),          // ₽ | ₸ | $
+    amountRub: baseRub,                      // введённая сумма (в ₽)
+    creditByRate: convertCreditAmount(baseRub), // пересчитанная сумма к зачислению (в валюте региона)
     feeRate: FEE_RATE,
     feeFixed: FEE_FIXED,
     promo:  (promoInput.value.trim() || null),
-    totalPay: totalAmount.textContent,   // Итого к оплате (₽)
-    creditApprox: sumAmount.textContent  // ≈ сумма к зачислению (валюта региона)
+    totalPayRub: +(baseRub + (baseRub * FEE_RATE + FEE_FIXED) - getPromoDiscount(baseRub + (baseRub * FEE_RATE + FEE_FIXED))).toFixed(2)
   };
 
   if (tg) {
@@ -148,7 +172,7 @@ document.getElementById("topup-form").addEventListener("submit", (e) => {
       showToast("Не удалось отправить в Telegram.");
     }
   } else {
-    showToast(`Оплата для @${payload.login} (${payload.region}) на ${payload.totalPay}.`);
+    showToast(`Оплата для @${payload.login} (${payload.region}) на ${fmtPay(payload.totalPayRub)}.`);
   }
 });
 
