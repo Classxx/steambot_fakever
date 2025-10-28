@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Пополнение Steam — Касса</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:," />
+  <meta name="color-scheme" content="light dark">
+</head>
+<body>
+  <div class="bg-decor" aria-hidden="true"></div>
+
+  <header class="site-header">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <img src="logo.svg" alt="Логотип" />
+      </div>
+      <div class="brand-text">
+        <strong>Steam Top-Up</strong>
+        <span class="muted">Безопасно. Быстро. Удобно.</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="card checkout">
+      <h1>Пополнение баланса Steam</h1>
+      <p class="sub">Введите логин и сумму пополнения. Итоговая стоимость посчитается автоматически.</p>
+
+      <form id="topup-form" novalidate>
+        <div class="form-grid">
+          <div class="field">
+            <label for="login">Логин Steam</label>
+            <input id="login" name="login" type="text" inputmode="latin-name" autocomplete="username"
+                   placeholder="например, class" required minlength="3" maxlength="64" />
+            <small class="hint">Мы никогда не запрашиваем пароль.</small>
+          </div>
+
+          <div class="field">
+            <label for="amount">Сумма пополнения (₽)</label>
+            <div class="amount-wrap">
+              <input id="amount" name="amount" type="number" min="50" step="10" placeholder="Например, 500" required />
+            </div>
+            <small class="hint">Минимум 50 ₽. Шаг — 10 ₽.</small>
+          </div>
+
+          <div class="field">
+            <label for="promo">Промокод (опционально)</label>
+            <input id="promo" name="promo" type="text" placeholder="Введите промокод" />
+            <small id="promo-msg" class="hint"></small>
+          </div>
+        </div>
+
+        <div class="summary card-ghost" role="region" aria-live="polite">
+          <div class="row">
+            <span>Сумма к зачислению</span>
+            <strong id="sum-amount">—</strong>
+          </div>
+          <div class="row">
+            <span>Комиссия сервиса <span class="muted" id="fee-rate-label"></span></span>
+            <strong id="fee-amount">—</strong>
+          </div>
+          <div class="row">
+            <span>Скидка по промокоду</span>
+            <strong id="discount-amount">—</strong>
+          </div>
+          <hr />
+          <div class="row total">
+            <span>Итого к оплате</span>
+            <strong id="total-amount">—</strong>
+          </div>
+        </div>
+
+        <label class="check">
+          <input type="checkbox" id="terms" />
+          <span>Подтверждаю, что логин верный, и соглашаюсь с
+            <a href="#" onclick="return false;">политикой конфиденциальности</a> и
+            <a href="#" onclick="return false;">условиями сервиса</a>.
+          </span>
+        </label>
+
+        <button id="pay-btn" type="submit" disabled>
+          Оплатить
+        </button>
+      </form>
+    </section>
+
+    <section class="card info">
+      <h2>Как это работает</h2>
+      <ul class="steps">
+        <li>Вводите логин и сумму.</li>
+        <li>При необходимости применяете промокод.</li>
+        <li>Проверяете итог и подтверждаете согласия.</li>
+        <li>Нажимаете «Оплатить» — мы перенаправим на платёжную страницу.</li>
+      </ul>
+      <p class="tiny muted">Демонстрационная версия. Серверной обработки платежей нет.</p>
+    </section>
+  </main>
+
+  <div id="toast" role="status" aria-live="assertive" class="toast" hidden></div>
+
+  <footer class="site-footer">
+    <span>© 2025 Steam Top-Up (демо)</span>
+    <nav>
+      <a href="#" onclick="return false;">Политика</a>
+      <a href="#" onclick="return false;">Условия</a>
+      <a href="#" onclick="return false;">Поддержка</a>
+    </nav>
+  </footer>
+
+  <script src="app.js" defer></script>
+</body>
+</html>
