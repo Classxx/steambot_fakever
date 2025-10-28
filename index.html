@@ -14,7 +14,7 @@
   <header class="site-header">
     <div class="brand">
       <div class="logo" aria-hidden="true">
-        <img src="logo.svg" alt="Логотип" />
+        <img src="./logo.svg" alt="Логотип" />
       </div>
       <div class="brand-text">
         <strong>Steam Top-Up</strong>
@@ -26,9 +26,22 @@
   <main class="container">
     <section class="card checkout">
       <h1>Пополнение баланса Steam</h1>
-      <p class="sub">Введите логин и сумму пополнения. Итоговая стоимость посчитается автоматически.</p>
+      <p class="sub">Выберите регион, введите логин и сумму. Итог посчитается автоматически.</p>
 
       <form id="topup-form" novalidate>
+        <!-- Кнопки-регионы -->
+        <fieldset class="region-pills" id="region-group">
+          <legend class="sr-only">Регион</legend>
+          <input type="radio" name="region" id="reg-ru"  value="RU">
+          <label for="reg-ru">Россия</label>
+
+          <input type="radio" name="region" id="reg-kz"  value="KZ">
+          <label for="reg-kz">Казахстан</label>
+
+          <input type="radio" name="region" id="reg-cis" value="CIS">
+          <label for="reg-cis">СНГ</label>
+        </fieldset>
+
         <div class="form-grid">
           <div class="field">
             <label for="login">Логин Steam</label>
@@ -40,9 +53,9 @@
           <div class="field">
             <label for="amount">Сумма пополнения (₽)</label>
             <div class="amount-wrap">
-              <input id="amount" name="amount" type="number" min="50" step="10" placeholder="Например, 500" required />
+              <input id="amount" name="amount" type="number" min="50" step="1" placeholder="Например, 500" required />
             </div>
-            <small class="hint">Минимум 50 ₽. Шаг — 10 ₽.</small>
+            <small class="hint">Минимум 50 ₽.</small>
           </div>
 
           <div class="field">
@@ -80,28 +93,26 @@
           </span>
         </label>
 
-        <button id="pay-btn" type="submit" disabled>
-          Оплатить
-        </button>
+        <button id="pay-btn" type="submit" disabled>Оплатить</button>
       </form>
     </section>
 
     <section class="card info">
       <h2>Как это работает</h2>
-      <ul class="steps">
-        <li>Вводите логин и сумму.</li>
-        <li>При необходимости применяете промокод.</li>
-        <li>Проверяете итог и подтверждаете согласия.</li>
-        <li>Нажимаете «Оплатить» — мы перенаправим на платёжную страницу.</li>
-      </ul>
-      <p class="tiny muted">Демонстрационная версия. Серверной обработки платежей нет.</p>
+      <ol class="steps pretty">
+        <li><span>Укажите логин Steam</span><small>Только логин — пароли и коды не требуются.</small></li>
+        <li><span>Выберите регион</span><small>Россия, Казахстан или СНГ — для корректной обработки.</small></li>
+        <li><span>Введите сумму и промокод</span><small>Минимум 50 ₽, промокод — опционально.</small></li>
+        <li><span>Подтвердите условия</span><small>Проверьте логин и согласие с политиками.</small></li>
+        <li><span>Оплатите</span><small>Далее — платёжная страница.</small></li>
+      </ol>
     </section>
   </main>
 
   <div id="toast" role="status" aria-live="assertive" class="toast" hidden></div>
 
   <footer class="site-footer">
-    <span>© 2025 Steam Top-Up (демо)</span>
+    <span>© 2025 Steam Top-Up</span>
     <nav>
       <a href="#" onclick="return false;">Политика</a>
       <a href="#" onclick="return false;">Условия</a>
@@ -109,6 +120,8 @@
     </nav>
   </footer>
 
+  <!-- Telegram WebApp SDK (в ТГ уже доступен как объект, этот тег безопасен на GitHub Pages) -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script src="app.js" defer></script>
 </body>
 </html>
