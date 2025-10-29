@@ -188,17 +188,31 @@ function showToast(message){
 const ruRadio = document.getElementById("reg-ru");
 if (ruRadio) ruRadio.checked = true; // дефолт: Россия
 
-// ===== Фикс: закрытие клавиатуры при тапе вне полей =====
-document.addEventListener('touchend', (e) => {
-  const isInput = e.target.closest('input, textarea, select');
-  if (!isInput) {
-    // снимаем фокус со всех инпутов
-    document.activeElement?.blur();
-    // иногда помогает принудительный скролл (iOS Safari bug)
-    setTimeout(() => window.scrollTo(0, 0), 50);
-  }
-});
+// ===== Закрытие клавиатуры без «прыжка наверх» =====
+(function setupKeyboardDismiss() {
+  let touchMoved = false;
+
+  document.addEventListener('touchstart', () => { touchMoved = false; }, { passive: true });
+  document.addEventListener('touchmove', () => { touchMoved = true; }, { passive: true });
+
+  document.addEventListener('touchend', (e) => {
+    // если палец двигали — это скролл, ничего не делаем
+    if (touchMoved) return;
+
+    const target = e.target;
+    // если клик по интерактиву — не блурим
+    if (target.closest('input, textarea, select, button, [role="button"], .region-pills label')) return;
+
+    const active = document.activeElement;
+    if (active && /^(input|textarea|select)$/i.test(active.tagName)) {
+      active.blur();
+      // НИКАКОГО scrollTo(0,0) — он и вызывал «прыжок наверх»
+    }
+  });
+})();
+
 
 
 recalc();
+
 
