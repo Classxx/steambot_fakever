@@ -211,8 +211,13 @@ if (ruRadio) ruRadio.checked = true; // дефолт: Россия
   });
 })();
 
+// ===== Отменяем переходы по a[href="#"] (мобильный баг с прокруткой) =====
+document.querySelectorAll('a[href="#"]').forEach((a) => {
+  a.addEventListener('click', (e) => e.preventDefault());
+});
 
 
 recalc();
+
 
 
